@@ -94,14 +94,18 @@
         component: 'custom_online'
       };
       
-      Lampa.Menu.add({
-        title: '4K Фильмы (NoAdsMovies)',
-        icon: 'play',
-        action: function() {
-          Lampa.Activity.push({
-            url: '',
-            title: '4K Фильмы',
-            component: 'custom_online'
+      Lampa.Listener.follow('full', function(event) {
+        if (event.type === 'complite') {
+          event.object.plugins.push({
+            title: 'Смотреть в 4K',
+            component: 'custom_online',
+            onClick: function() {
+              Lampa.Activity.push({
+                url: '',
+                title: '4K Фильмы',
+                component: 'custom_online'
+              });
+            }
           });
         }
       });
