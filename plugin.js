@@ -96,9 +96,10 @@
       
       Lampa.Listener.follow('full', function(event) {
         if (event.type === 'complite') {
-          event.object.plugins.push({
-            title: 'Смотреть в 4K',
-            component: 'custom_online',
+          event.object.button.append({
+            title: '4K (NoAdsMovies)',
+            icon: 'play',
+            position: 1,
             onClick: function() {
               Lampa.Activity.push({
                 url: '',
