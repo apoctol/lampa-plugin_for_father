@@ -32,10 +32,7 @@
   
     function component(object) {
       var network = new Lampa.Reguest();
-      var scroll = new Lampa.Scroll({
-        mask: true,
-        over: true
-      });
+      var scroll = new Lampa.Scroll({ mask: true, over: true });
       var files = new Lampa.Explorer(object);
       var filter = new Lampa.Filter(object);
       
@@ -43,63 +40,39 @@
         this.loading(true);
         
         if(object.movie && object.movie.id) {
-          var movie_id = object.movie.id;
           var source = Defined.sources[Math.floor(Math.random() * Defined.sources.length)];
-          
-          network.native(source + 'api/v1/movie/' + movie_id, function(data) {
+          network.native(source + 'api/v1/movie/' + object.movie.id, function(data) {
             if(data.streams && data.streams.length) {
-              var availableStreams = data.streams.filter(function(stream) {
-                return stream.quality && stream.quality.includes('4K');
-              });
-              this.display(availableStreams);
-            } else {
-              this.doesNotAnswer();
-            }
-          }.bind(this), function() {
-            this.doesNotAnswer();
-          }.bind(this));
-        }
-        else {
-          var source = Defined.sources[Math.floor(Math.random() * Defined.sources.length)];
+              var streams = data.streams.filter(s => s.quality.includes('4K'));
+              this.display(streams);
+            } else this.doesNotAnswer();
+          }.bind(this), this.doesNotAnswer.bind(this));
+        } else {
+          source = Defined.sources[Math.floor(Math.random() * Defined.sources.length)];
           network.native(source + 'api/v1/movies', function(data) {
-            var filteredMovies = data.filter(function(movie) {
-              return movie.quality && movie.quality.includes('4K');
-            });
-            this.display(filteredMovies);
-          }.bind(this), function() {
-            this.doesNotAnswer();
-          }.bind(this));
+            var movies = data.filter(m => m.quality.includes('4K'));
+            this.display(movies);
+          }.bind(this), this.doesNotAnswer.bind(this));
         }
       };
       
       this.display = function(items) {
         scroll.clear();
-        items.forEach(function(item) {
-          var templateName = item.stream_4k ? 'online' : 'movie';
-          var element = Lampa.Template.get(templateName, item);
-          
-          element.on('hover:enter', function() {
-            if(item.stream_4k) {
-              Lampa.Player.play({ url: item.stream_4k });
-            }
-          });
-          
+        items.forEach(item => {
+          var element = Lampa.Template.get(item.stream ? 'online' : 'movie', item);
+          element.on('hover:enter', () => Lampa.Player.play({ url: item.stream }));
           scroll.append(element);
         });
         Lampa.Controller.enable('content');
       };
       
       this.loading = function(status) {
-        if (status) this.activity.loader(true);
-        else {
-          this.activity.loader(false);
-          this.activity.toggle();
-        }
+        this.activity.loader(status);
+        if(!status) this.activity.toggle();
       };
       
       this.doesNotAnswer = function() {
-        scroll.clear();
-        scroll.append(Lampa.Template.get('empty', {}));
+        scroll.clear().append(Lampa.Template.get('empty', {}));
         this.loading(false);
       };
       
@@ -119,32 +92,27 @@
         component: 'custom_online'
       };
       
-      // Исправленная интеграция кнопки
+      // Добавление кнопки в карточку фильма
       Lampa.Listener.follow('full', function(event) {
-        if (event.type === 'complite' && event.object && event.object.movie) {
-          const movie = event.object.movie;
-          
-          // Создаем кнопку с использованием jQuery
+        if(event.type === 'complite' && event.object.movie) {
           const button = $(`
             <div class="view--custom_online selector" 
-                 style="background-color: #4CAF50; color: white; margin: 5px; padding: 8px 12px; border-radius: 4px;">
+                 style="background: #4CAF50; color: white; margin: 5px; padding: 8px 12px; border-radius: 4px;">
               4K Без рекламы
             </div>
           `);
           
-          // Вставляем кнопку после кнопки торрента
-          button.on('hover:enter', function() {
+          button.on('hover:enter', () => {
             Lampa.Activity.push({
-              url: '',
               title: '4K Фильмы',
               component: 'custom_online',
-              movie: movie
+              movie: event.object.movie
             });
           });
           
-          // Находим контейнер кнопок и добавляем нашу
-          const buttonsContainer = event.object.activity.render().find('.full-start__buttons');
-          buttonsContainer.append(button);
+          // Вставляем кнопку после кнопки торрента
+          const container = event.object.activity.render().find('.full-start__buttons');
+          container.append(button);
         }
       });
     }
