@@ -94,12 +94,14 @@
         component: 'custom_online'
       };
       
+      // Добавляем кнопку в карточке фильма (в блоке плагинов)
       Lampa.Listener.follow('full', function(event) {
         if (event.type === 'complite') {
-          event.object.button.append({
+          // Если массив плагинов не создан, создаём его
+          if (!event.object.plugins) event.object.plugins = [];
+          event.object.plugins.push({
             title: '4K (NoAdsMovies)',
             icon: 'play',
-            position: 1,
             onClick: function() {
               Lampa.Activity.push({
                 url: '',
