@@ -98,7 +98,8 @@
         if (event.type === 'complite') {
           if (!event.object.buttons) event.object.buttons = [];
           event.object.buttons.push({
-            title: 'Смотреть 4K без рекламы',
+            title: '😃', // Значок, который всегда виден
+            hover_title: 'Смотреть 4K без рекламы', // Текст, появляющийся при наведении
             onClick: function() {
               Lampa.Activity.push({
                 url: '',
