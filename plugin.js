@@ -45,7 +45,8 @@
         var source = Defined.sources[Math.floor(Math.random() * Defined.sources.length)];
         
         network.native(source + 'api/v1/movies', function(data) {
-          this.display(data);
+          var filteredMovies = data.filter(movie => movie.quality.includes('4K'));
+          this.display(filteredMovies);
         }.bind(this), function() {
           this.doesNotAnswer();
         }.bind(this));
@@ -92,6 +93,18 @@
         description: 'Плагин для просмотра 4K фильмов без рекламы',
         component: 'custom_online'
       };
+      
+      Lampa.Menu.add({
+        title: '4K Фильмы (NoAdsMovies)',
+        icon: 'play',
+        action: function() {
+          Lampa.Activity.push({
+            url: '',
+            title: '4K Фильмы',
+            component: 'custom_online'
+          });
+        }
+      });
     }
     
     startPlugin();
