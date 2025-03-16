@@ -94,26 +94,19 @@
         component: 'custom_online'
       };
       
-      // Добавляем кнопку в карточке фильма.
-      Lampa.Listener.follow('card', function(event) {
-        if (event.card) {
-          // Если контейнер кнопок ещё не создан – создаём его.
-          if (!event.card.buttons) {
-            event.card.buttons = $('<div class="filmcard__buttons"></div>');
-            if (event.card.$view) {
-              event.card.$view.append(event.card.buttons);
+      Lampa.Listener.follow('full', function(event) {
+        if (event.type === 'complite') {
+          if (!event.object.buttons) event.object.buttons = [];
+          event.object.buttons.push({
+            title: 'Смотреть 4K без рекламы',
+            onClick: function() {
+              Lampa.Activity.push({
+                url: '',
+                title: '4K Фильмы',
+                component: 'custom_online'
+              });
             }
-          }
-          // Создаем кнопку. Можно настроить стили по желанию.
-          var $btn = $('<div class="filmcard__button" style="padding: 8px 12px; background: #222; color: #fff; margin: 5px; border-radius: 4px; font-size: 14px; text-align: center; cursor: pointer;">4K (NoAds)</div>');
-          $btn.on('click', function() {
-            Lampa.Activity.push({
-              url: '',
-              title: '4K Фильмы',
-              component: 'custom_online'
-            });
           });
-          event.card.buttons.append($btn);
         }
       });
     }
