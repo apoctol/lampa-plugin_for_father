@@ -1,90 +1,80 @@
-(function() {
-    'use strict';
-
-    var Defined = {
-        api: 'lampac',
-        sources: [
-            'https://rezka.ag/',
-            'https://seasonvar.ru/',
-            'https://lostfilmhd.ru/',
-            'https://kinotochka.me/',
-            'https://kinopub.me/',
-            'https://kinoprofi.org/',
-            'https://kinokrad.co/',
-            'https://kinobase.org/',
-            'https://filmix.ac/',
-            'https://filmixtv.ru/',
-            'https://redheadsound.ru/',
-            'https://animevost.org/',
-            'https://animego.org/',
-            'https://animedia.tv/',
-            'https://animebesst.org/',
-            'https://anilibria.tv/',
-            'https://rhsprem.org/',
-            'https://kodik.cc/',
-            'https://remux.club/',
-            'https://animelib.me/',
-            'https://kinoukr.com/'
-        ]
-    };
-
-    // Перехватываем родной метод получения трейлеров
-    const originalGetTrailers = Lampa.Movie.prototype.getTrailers;
-    Lampa.Movie.prototype.getTrailers = function() {
-        const originalPromise = originalGetTrailers.apply(this, arguments);
+(function(){
+    // Функция инициализации плагина
+    function init() {
+      // Проверяем, загрузилась ли карточка фильма (предположим, что у карточки есть класс .movie-card)
+      const movieCard = document.querySelector('.movie-card');
+      if (movieCard) {
+        // Ищем контейнер для кнопок в карточке (например, .movie-card-buttons)
+        const btnContainer = movieCard.querySelector('.movie-card-buttons');
         
-        // Запрашиваем ваши источники
-        const customPromise = new Promise((resolve) => {
-            if (!this.id) return resolve([]);
+        // Если контейнер найден, создаём кнопку
+        if (btnContainer) {
+          const btn = document.createElement('button');
+          btn.textContent = "Список контента";
+          btn.style.padding = '10px';
+          btn.style.margin = '5px';
+          
+          // Обработчик клика по кнопке
+          btn.addEventListener('click', function(){
+            // Фиксированный список контента с заглушками-ссылками
+            const contentList = [
+              { title: "Видео 1", url: "#" },
+              { title: "Видео 2", url: "#" },
+              { title: "Видео 3", url: "#" }
+            ];
             
-            const source = Defined.sources[Math.floor(Math.random() * Defined.sources.length)];
-            const url = `${source}api/v1/movie/${this.id}`;
+            // Создаём модальное окно для показа списка
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
             
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    const customStreams = data.streams
-                        .filter(stream => stream.quality.includes('4K'))
-                        .map(stream => ({
-                            title: `4K ${stream.quality} (Showy)`,
-                            url: stream.url,
-                            type: 'custom'
-                        }));
-                    resolve(customStreams);
-                })
-                .catch(() => resolve([]));
-        });
-
-        // Объединяем результаты
-        return Promise.all([originalPromise, customPromise])
-            .then(([original, custom]) => [...original, ...custom]);
-    };
-
-    // Добавляем обработчик кликов для новых источников
-    Lampa.Listener.follow('video', function(e) {
-        if (e.type === 'select' && e.item.type === 'custom') {
-            e.preventDefault();
-            Lampa.Player.play({ url: e.item.url });
+            // Создаём контейнер для списка
+            const listContainer = document.createElement('div');
+            listContainer.style.background = '#fff';
+            listContainer.style.padding = '20px';
+            listContainer.style.borderRadius = '5px';
+            
+            const list = document.createElement('ul');
+            contentList.forEach(item => {
+              const li = document.createElement('li');
+              li.style.margin = '5px 0';
+              // Заглушка-ссылка
+              li.innerHTML = `<a href="${item.url}" style="text-decoration:none; color: #333;">${item.title}</a>`;
+              list.appendChild(li);
+            });
+            listContainer.appendChild(list);
+            
+            // Добавляем кнопку закрытия модального окна
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = "Закрыть";
+            closeBtn.style.marginTop = '10px';
+            closeBtn.addEventListener('click', () => {
+              document.body.removeChild(modal);
+            });
+            listContainer.appendChild(closeBtn);
+            
+            modal.appendChild(listContainer);
+            document.body.appendChild(modal);
+          });
+          
+          // Добавляем кнопку в контейнер карточки
+          btnContainer.appendChild(btn);
         }
-    });
-
-    // Модифицируем отображение элементов
-    const originalRenderTrailers = Lampa.Movie.prototype.renderTrailers;
-    Lampa.Movie.prototype.renderTrailers = function() {
-        originalRenderTrailers.apply(this, arguments);
-        
-        // Добавляем стили для кастомных элементов
-        $('.trailers__list').append(`
-            <style>
-                .trailer-item.custom { 
-                    background-color: #4CAF50; 
-                    color: white; 
-                    margin: 5px; 
-                    padding: 8px 12px; 
-                    border-radius: 4px;
-                }
-            </style>
-        `);
-    };
-
-})();
+      } else {
+        // Если карточка фильма ещё не загружена, пробуем снова через 1 секунду
+        setTimeout(init, 1000);
+      }
+    }
+    
+    // Запуск плагина
+    init();
+  })();
+  
